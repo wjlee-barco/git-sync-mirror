@@ -1,0 +1,48 @@
+git-sync-mirror:
+#  variables:
+#    CI_DEBUG_TRACE: "true"
+  tags:
+    - barco, shell, ubuntu
+  stage: deploy
+  before_script:
+    - whoami
+    - if [ -e .env ]; then echo "Found .env"; else cp .env.sample .env; fi
+    - source .env
+    # - sudo bash ./scripts/before_script_install.sh
+  script: 
+    - set +e # Disable exit on error
+    - echo $PWD
+    # echo " Assume user is gitlab-runner. If root, then sudo can be removed"
+    - echo $USER
+    - ip route show
+    - ifconfig
+    - sudo nmap -v localhost
+    - sudo timedatectl set-timezone Asia/Taipei
+    - sudo lsb_release -a
+    - sudo uname -a
+ 
+    - sudo docker --version
+    - sudo docker images
+    - sudo docker system df
+    - sudo docker ps
+    - sudo docker container ls -q
+
+    # first stop docker process  
+    - sudo docker stop  $(sudo docker container ls -aq --filter name=git-sync-mirror*)
+
+    # clean up all stop images, containers
+    - sudo docker container prune -f
+    - sudo docker image prune -a -f
+
+    - sudo docker network create proxy
+
+
+    - sudo docker run --name git-sync-mirror1 --rm --env SRC_REPO=${SRC_REPO} --env DST_REPO=${DST_REPO} --env SLEEP_TIME=${SLEEP_TIME} enteee/git-sync-mirror
+    - sudo docker stop  $(sudo docker container ls -aq --filter name=git-sync-mirror*)
+    - sudo chown -R gitlab-runner:gitlab-runner $PWD/*
+    - sudo chown -R gitlab-runner:gitlab-runner $PWD/.*
+    - set -e # Enable exit on error
+  after_script:
+    - sudo docker stop  $(sudo docker container ls -aq --filter name=git-sync-mirror*)
+    - sudo chown -R gitlab-runner:gitlab-runner $PWD/*
+    - sudo chown -R gitlab-runner:gitlab-runner $PWD/.*
