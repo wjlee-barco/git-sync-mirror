@@ -36,8 +36,9 @@ git-sync-mirror:
 
     - sudo docker network create proxy
 
+    - sudo docker run --name git-sync-mirror1 --rm --env SRC_REPO=${SRC_REPO1} --env DST_REPO=${DST_REPO1} --env ONCE=${ONCE} enteee/git-sync-mirror
+    - sudo docker run --name git-sync-mirror1 --rm --env SRC_REPO=${SRC_REPO2} --env DST_REPO=${DST_REPO2} --env ONCE=${ONCE} enteee/git-sync-mirror
 
-    - sudo docker run --name git-sync-mirror1 --rm --env SRC_REPO=${SRC_REPO1} --env DST_REPO=${DST_REPO1} --env SLEEP_TIME=${SLEEP_TIME} enteee/git-sync-mirror
     - sudo docker stop  $(sudo docker container ls -aq --filter name=git-sync-mirror*)
     - sudo chown -R gitlab-runner:gitlab-runner $PWD/*
     - sudo chown -R gitlab-runner:gitlab-runner $PWD/.*
